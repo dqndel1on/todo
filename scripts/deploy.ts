@@ -20,6 +20,12 @@ async function main() {
   await greeter.deployed();
 
   console.log("Greeter deployed to:", greeter.address);
+  const ToDo = await ethers.getContractFactory("_ToDo");
+  const todo = await Greeter.deploy();
+
+  await greeter.deployed();
+
+  console.log("ToDo deployed to:", greeter.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
