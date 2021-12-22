@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 contract ToDo {
+    uint256 public totalItemsInList=0;
     struct ToDoList{
         uint256 id;
         string date;
@@ -19,6 +20,7 @@ contract ToDo {
         toDoItem: _text,
         completed:false
         }));
+        totalItemsInList +=1;
     }
 
     function updateToDoItem(uint _index, string calldata _text) external {
