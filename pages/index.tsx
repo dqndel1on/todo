@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import { AiOutlineCheck } from 'react-icons/ai';
 import useToDo from '../store/contract.store';
-import useEthers from '../store/ethers';
+import useEthers from '../store/ethers.store';
 
 declare let window: any;
 
