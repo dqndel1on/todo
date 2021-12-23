@@ -1,34 +1,19 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { ethers } from 'ethers';
-import ToDo from '../artifacts/contracts/_ToDo.sol/ToDo.json';
 import { useEffect, useState } from 'react';
 import { AiOutlineCheck } from 'react-icons/ai';
+import useToDo from '../store/contract.store';
 import useEthers from '../store/ethers';
 
 declare let window: any;
 
 const Home: NextPage = () => {
-  const { account, setAccount, setProvider } = useEthers((state) => state);
-
-  const requestAccount = async () => {
-    const Accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    setAccount(Accounts);
-  };
-
-  const checkMMConnection = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    setProvider(provider);
-    const accounts = await provider.listAccounts();
-    if (accounts.length !== 0) {
-      void requestAccount();
-    } else {
-      setAccount(accounts);
-    }
-  };
+  const [task, setTask] = useState<string>('');
+  const { accounts, requestAccounts, checkMMConnection } = useEthers();
+  const { tasks, createTask, getTasks, totalItemsInList, getTotalItemsInList } = useToDo();
 
   const handleConnectWallet = () => {
-    void requestAccount();
+    void requestAccounts();
   };
 
   useEffect(() => {
@@ -36,17 +21,34 @@ const Home: NextPage = () => {
   }, []);
 
   useEffect(() => {
+    let id = 0;
+    if (totalItemsInList > 0) {
+      for (id == 0; id < totalItemsInList; id++) {
+        void getTasks(id);
+      }
+    }
+  }, [totalItemsInList]);
+
+  useEffect(() => {
+    void getTotalItemsInList();
+  }, []);
+
+  useEffect(() => {
     if (typeof window.ethereum !== undefined) {
-      window.ethereum.on('accountsChanged', (accounts: []) => {
-        setAccount(accounts);
+      window.ethereum.on('accountsChanged', () => {
+        void requestAccounts();
       });
     }
-  }, [account]);
+  }, [accounts]);
 
+  const handleAddTask = () => {
+    createTask({ toDoItem: task, id: 0, date: new Date().toLocaleDateString() });
+  };
+  console.log(totalItemsInList, tasks);
   return (
     <div>
       <Head>
-        <title>Create Next App</title>
+        <title>To Do List | My Notes</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="max-w-md mx-auto w-full mt-20 bg-gradient-to-r px-4 py-5 from-red-300 to-orange-300 text-white rounded-md">
@@ -60,8 +62,12 @@ const Home: NextPage = () => {
           You have <span className="text-red-500">4 tasks</span> left to do.
         </p>
         <div className="flex rounded-md overflow-hidden">
-          <input className="w-8/12 h-10 p-2 text-black"></input>
-          <button className="bg-red-400 w-4/12 h-10">Add Task</button>
+          <input
+            onChange={(e) => setTask(e.target.value)}
+            className="w-8/12 h-10 p-2 text-black"></input>
+          <button onClick={handleAddTask} className="bg-red-400 w-4/12 h-10">
+            Add Task
+          </button>
         </div>
         <div className="py-5 flex justify-between">
           <h1 className="font-black">YOUR TASKS</h1>
