@@ -10,10 +10,15 @@ declare let window: any;
 const Home: NextPage = () => {
   const [task, setTask] = useState<string>('');
   const { accounts, requestAccounts, checkMMConnection } = useEthers();
-  const { tasks, createTask, getTasks, totalItemsInList, getTotalItemsInList } = useToDo();
+  const { tasks, createTask, getTasks, totalItemsInList, getTotalItemsInList, sendComplete } =
+    useToDo();
 
   const handleConnectWallet = () => {
     void requestAccounts();
+  };
+
+  const handleComplete = (index) => {
+    void sendComplete(index);
   };
 
   useEffect(() => {
@@ -42,9 +47,10 @@ const Home: NextPage = () => {
   }, [accounts]);
 
   const handleAddTask = () => {
-    createTask({ toDoItem: task, id: 0, date: new Date().toLocaleDateString() });
+    createTask({ toDoItem: task, id: totalItemsInList, date: new Date().toLocaleDateString() });
   };
-  console.log(totalItemsInList, tasks);
+
+  const uncompletedTasks = tasks.filter((task) => task[3] === false);
   return (
     <div>
       <Head>
@@ -74,12 +80,20 @@ const Home: NextPage = () => {
           {/*<h1 className="font-black bg-green-600 p-1 rounded-md">COMPLETED TASKS</h1>*/}
         </div>
         <ul className="list-none list-inside">
-          <li className="flex justify-center items-center rounded-md overflow-hidden mt-1">
-            <input className="w-8/12 h-10 p-2 text-black"></input>
-            <button className="w-4/12 flex justify-center items-center bg-red-400 h-10">
-              <AiOutlineCheck />
-            </button>
-          </li>
+          {uncompletedTasks.map((task, i) => {
+            return (
+              <li
+                key={i}
+                className="flex justify-center items-center rounded-md overflow-hidden mt-1">
+                <input value={task[0]} className="w-8/12 h-10 p-2 text-black"></input>
+                <button
+                  onClick={() => handleComplete(Number(task[1]))}
+                  className="w-4/12 flex justify-center items-center bg-red-400 h-10">
+                  <AiOutlineCheck /> Finished
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </main>
     </div>
