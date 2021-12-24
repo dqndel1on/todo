@@ -14,7 +14,8 @@ type ToDoTypes = {
     tasks: DataTypes[];
     getTasks: (id: number) => void;
     totalItemsInList: number;
-    getTotalItemsInList: () => void
+    getTotalItemsInList: () => void;
+    sendComplete: (index: number) => void
 }
 
 const useToDo = create<ToDoTypes>((set, get) => ({
@@ -28,7 +29,7 @@ const useToDo = create<ToDoTypes>((set, get) => ({
             const contract = new ethers.Contract(get().contractAddress, ToDo.abi, signer)
             const transaction = await contract.create(data.toDoItem, data.id, data.date)
             await transaction.wait()
-            set(prev => ({ tasks: [...prev.tasks, data], totalItemsInList: get().totalItemsInList + 1 }))
+            set({ tasks: [], totalItemsInList: get().totalItemsInList + 1 })
         }
     },
     getTasks: async (id) => {
@@ -52,6 +53,20 @@ const useToDo = create<ToDoTypes>((set, get) => ({
                 set({ totalItemsInList: data.toNumber() })
             } catch (err) {
                 throw new Error("Could not get data.")
+            }
+        }
+    },
+    sendComplete: async (index) => {
+        if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner()
+            const contract = new ethers.Contract(get().contractAddress, ToDo.abi, signer)
+            try {
+                const transaction = await contract.toggleCompleted(index)
+                await transaction.wait()
+                set({ tasks: [], totalItemsInList: get().totalItemsInList - 1 })
+            } catch (err) {
+                throw new Error("Could not update data.")
             }
         }
     }
